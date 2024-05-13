@@ -66,7 +66,7 @@ async def read_posts():
     posts = list(posts_collection.find())
     formatted_posts = []
     for post in posts:
-        post["_id"] = str(post["_id"])  # Convert ObjectId to string
+        post["_id"] = str(post["_id"])
         formatted_posts.append(post)
     return formatted_posts
 
