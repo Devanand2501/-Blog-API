@@ -56,7 +56,7 @@ app = FastAPI()
 # Create operation
 @app.post("/posts/")
 async def create_post(post: Post):
-    post_obj = BlogPost(**post.dict())
+    post_obj = BlogPost(**post.model_dump())
     inserted_post = posts_collection.insert_one(post_obj.to_dict())
     return {"message": "Post created successfully", "post_id": str(inserted_post.inserted_id)}
 
@@ -74,7 +74,7 @@ async def read_posts():
 # Update operation
 @app.put("/posts/{post_id}")
 async def update_post(post_id: str, post: Post):
-    updated_post = posts_collection.update_one({"_id": ObjectId(post_id)}, {"$set": post.dict()})
+    updated_post = posts_collection.update_one({"_id": ObjectId(post_id)}, {"$set": post.model_dump()})
     if updated_post.modified_count == 1:
         return {"message": "Post updated successfully"}
     else:
@@ -92,7 +92,7 @@ async def delete_post(post_id: str):
 # Comment operation
 @app.put("/posts/{post_id}/comments/")
 async def create_comment(post_id: str, comment: Comment):
-    new_comment = comment.dict()
+    new_comment = comment.model_dump()
     updated_post = posts_collection.update_one({"_id": ObjectId(post_id)}, {"$push": {"comments": new_comment}})
     if updated_post.modified_count == 1:
         return {"message": "Comment added successfully"}
@@ -100,7 +100,7 @@ async def create_comment(post_id: str, comment: Comment):
         raise HTTPException(status_code=404, detail="Post not found")
 
 # Like operation
-@app.put("/posts/{post_id}/like/")
+@app.patch("/posts/{post_id}/like/")
 async def like_post(post_id: str):
     updated_post = posts_collection.update_one({"_id": ObjectId(post_id)}, {"$inc": {"likes": 1}})
     if updated_post.modified_count == 1:
@@ -109,7 +109,7 @@ async def like_post(post_id: str):
         raise HTTPException(status_code=404, detail="Post not found")
 
 # Dislike operation
-@app.put("/posts/{post_id}/dislike/")
+@app.patch("/posts/{post_id}/dislike/")
 async def dislike_post(post_id: str):
     updated_post = posts_collection.update_one({"_id": ObjectId(post_id)}, {"$inc": {"dislikes": 1}})
     if updated_post.modified_count == 1:
